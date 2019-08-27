@@ -5,16 +5,20 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.File;
 
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import notepad.backend.beam.Document;
 
@@ -71,9 +75,42 @@ public class NotepadGUI extends JFrame implements ActionListener {
 	
 	private JScrollPane initTextPane() {
 		txtText = new JTextArea();
-		txtText.addKeyListener(new KeyAdapter() {
+//		txtText.getDocument().addDocumentListener(new DocumentListener() {
+//
+//			@Override
+//			public void insertUpdate(DocumentEvent e) {
+//				Document.getInstance().setText(txtText.getText());
+//				
+//			}
+//
+//			@Override
+//			public void removeUpdate(DocumentEvent e) {
+//				Document.getInstance().setText(txtText.getText());
+//				
+//			}
+//
+//			@Override
+//			public void changedUpdate(DocumentEvent e) {
+//				Document.getInstance().setText(txtText.getText());
+//				
+//			}
+//			
+//		});
+		txtText.addKeyListener(new KeyListener() {
 			public void keyTyped(KeyEvent e) {
 				Document.getInstance().setText(txtText.getText());
+			}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				Document.getInstance().setText(txtText.getText());
+				
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				Document.getInstance().setText(txtText.getText());
+				
 			}
 		});
 		
@@ -109,10 +146,112 @@ public class NotepadGUI extends JFrame implements ActionListener {
 		
 		return mnuFile;
 	}
+	
+	private int resetDocument() {
+		int res = 0;
+		if(Document.getInstance().isModified()) {
+			res = JOptionPane.showConfirmDialog(this, "Do yout want to save changes before proceeding?", "Notepad", JOptionPane.YES_NO_CANCEL_OPTION);
+			switch(res) {
+			case JOptionPane.YES_OPTION:
+				performSave();
+				break;
+				
+			case JOptionPane.NO_OPTION:
+				break;
+				
+			case JOptionPane.CANCEL_OPTION:
+				break;
+			}
+		}		
+		
+		if(res != JOptionPane.CANCEL_OPTION) {
+			Document.getInstance().reset();
+		}
+		
+		
+		return res;
+	}
+	
+	private JFileChooser initFileChooser() {
+		JFileChooser fc = new JFileChooser();
+		fc.setFileFilter(new FileNameExtensionFilter("Text documents", "txt"));
+		return fc;
+	}
+	
+	private void updateGraphics() {
+		if(Document.getInstance().getSaveDest() != null) {
+			this.setTitle("Notepad - " + Document.getInstance().getSaveDest().getName());
+		}
+		else {
+			this.setTitle("Notepad");
+		}
+		
+		txtText.setText(Document.getInstance().getText());
+	}
+	
+	public void performNew() {
+		resetDocument();
+		updateGraphics();
+	}
+	
+	public void performOpen() {
+		int res = resetDocument();
+		if(res != JOptionPane.CANCEL_OPTION) {
+			JFileChooser fc = initFileChooser();
+			if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+				Document.getInstance(fc.getSelectedFile());
+				updateGraphics();
+			}
+		}
+	}
+	
+	public void performSave() {
+		if(Document.getInstance().getSaveDest() != null) {
+			Document.getInstance().save();
+		}
+		else {
+			performSaveAs();
+		}
+	}
+	
+	public void performSaveAs() {
+		JFileChooser fc = initFileChooser();
+		if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+			File _f = fc.getSelectedFile();
+			if(!_f.getAbsolutePath().endsWith(".txt")) {
+				_f = new File(_f.getAbsolutePath() + ".txt");
+			}
+			Document.getInstance().setSaveDest(_f);
+			performSave();
+			updateGraphics();
+			
+		}
+	}
+	
+	public void performExit() {
+		int res = resetDocument();
+		if(res != JOptionPane.CANCEL_OPTION) {
+			System.exit(0);
+		}
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
+		if(e.getSource().equals(itemNew)) {
+			performNew();
+		}
+		else if(e.getSource().equals(itemOpen)) {
+			performOpen();
+		}
+		else if(e.getSource().equals(itemSave)) {
+			performSave();
+		}
+		else if(e.getSource().equals(itemSaveAs)) {
+			performSaveAs();
+		}
+		else if(e.getSource().equals(itemExit)) {
+			performExit();
+		}
 
 	}
 
