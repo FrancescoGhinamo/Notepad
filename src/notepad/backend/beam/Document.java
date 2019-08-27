@@ -42,9 +42,10 @@ public class Document {
 		modified = false;
 	}
 	
-	public void open(File source) {
-		String txt = TextFileServiceFactory.getTextFileService().openText(saveDest);
+	public static Document getInstance(File source) {
+		String txt = TextFileServiceFactory.getTextFileService().openText(source);
 		me = new Document(txt, source);
+		return me;
 	}
 	
 	public void reset() {
@@ -71,6 +72,7 @@ public class Document {
 	public boolean isModified() {
 		return modified;
 	}
+
 	
 	
 	
