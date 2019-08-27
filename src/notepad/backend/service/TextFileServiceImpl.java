@@ -6,6 +6,8 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class TextFileServiceImpl implements ITextFileService {
 	
 	TextFileServiceImpl() {
@@ -17,7 +19,7 @@ public class TextFileServiceImpl implements ITextFileService {
 		FileWriter fw = null;
 		try {
 			fw = new FileWriter(dest);
-			String toWrite = text.replaceAll("\n", "\r\n");
+			String toWrite = StringUtils.replace(text, "\n", "\r\n");
 			fw.write(toWrite);
 		} catch (IOException e) {
 			
